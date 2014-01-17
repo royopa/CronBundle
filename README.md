@@ -17,7 +17,7 @@ http://symfony.com/doc/current/cookbook/bundles/installation.html
 * Add bundle to AppKernel.php:
 
 ```php
-new SymfonyContrib\Bundle\FileFieldBundle\CronBundle(),
+new SymfonyContrib\Bundle\CronBundle\CronBundle(),
 ```
 
 ## Usage Examples
