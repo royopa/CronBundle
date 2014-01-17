@@ -1,0 +1,8 @@
+parameters:
+    cron.executer.class: SymfonyContrib\Bundle\CronBundle\CronExecuter
+
+services:
+    cron.executer:
+        class: %cron.executer.class%
+        calls:
+            - [setContainer, [@service_container]]

@@ -1,0 +1,111 @@
+SymfonyContrib\Bundle\CronBundle\Entity\Cron:
+    type: entity
+    repositoryClass: SymfonyContrib\Bundle\CronBundle\Entity\Repository\CronRepository
+    table: cron
+    id:
+        id:
+            type: integer
+            generator:
+                strategy: auto
+    uniqueConstraints:
+        cron_name:
+            columns:
+                - name
+    indexes:
+        cron_next_run:
+            columns:
+                - next_run
+        cron_last_ran:
+            columns:
+                - last_ran
+        cron_enabled:
+            columns:
+                - enabled
+        cron_status:
+            columns:
+                - status
+    fields:
+        name:
+            type: string
+            length: 255
+            options:
+                comment: Unique machine name.
+        job:
+            type: string
+            length: 255
+            options:
+                comment: Format: SymfonyServiceName:MethodName
+        desc:
+            column: description
+            type: string
+            length: 255
+            options:
+                comment: Description of cron.
+        runInterval:
+            column: run_interval
+            type: string
+            length: 255
+            options:
+                comment: Cron interval expression.
+        group:
+            column: run_group
+            type: string
+            length: 255
+            options:
+                comment: Group cron is a member of.
+        weight:
+            type: smallint
+            options:
+                comment: Weight of cron within group.
+        enabled:
+            type: boolean
+            options:
+                comment: Enabled/Disabled boolean flag.
+        status:
+            type: string
+            length: 255
+            options:
+                comment: Current status of cron. (running, failed, etc.)
+        durationLast:
+            column: duration_last
+            type: bigint
+            options:
+                comment: Duration, in microseconds, of last run.
+        durationMax:
+            column: duration_max
+            type: bigint
+            options:
+                comment: Duration, in microseconds, of longest run.
+        durationAvg:
+            column: duration_avg
+            type: bigint
+            options:
+                comment: Duration, in microseconds, of the average run time.
+        runCount:
+            column: run_count
+            type: bigint
+            options:
+                comment: Number of times this cron has been ran.
+        lastRan:
+            column: last_ran
+            type: datetime
+            nullable: true
+            options:
+                comment: Date and time when this cron last ran.
+        nextRun:
+            column: next_run
+            type: datetime
+            options:
+                comment: Date and time this cron SHOULD run.
+        owner:
+            type: string
+            length: 255
+            options:
+                comment: Who is the manager for this cron?
+    lifecycleCallbacks:
+        prePersist:
+            - prePersist
+        preUpdate:
+            - preUpdate
+
+
