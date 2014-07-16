@@ -7,27 +7,11 @@ SymfonyContrib\Bundle\CronBundle\Entity\Cron:
             type: integer
             generator:
                 strategy: auto
-    uniqueConstraints:
-        cron_name:
-            columns:
-                - name
-    indexes:
-        cron_next_run:
-            columns:
-                - next_run
-        cron_last_ran:
-            columns:
-                - last_ran
-        cron_enabled:
-            columns:
-                - enabled
-        cron_status:
-            columns:
-                - status
     fields:
         name:
             type: string
             length: 255
+            unique: true
             options:
                 comment: Unique machine name.
         job:
@@ -102,6 +86,19 @@ SymfonyContrib\Bundle\CronBundle\Entity\Cron:
             length: 255
             options:
                 comment: Who is the manager for this cron?
+    indexes:
+        cron_next_run:
+            columns:
+                - next_run
+        cron_last_ran:
+            columns:
+                - last_ran
+        cron_enabled:
+            columns:
+                - enabled
+        cron_status:
+            columns:
+                - status
     lifecycleCallbacks:
         prePersist:
             - prePersist

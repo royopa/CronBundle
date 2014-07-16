@@ -1,60 +1,50 @@
 <?php
-/**
- *
- */
 
 namespace SymfonyContrib\Bundle\CronBundle;
 
 use Doctrine\Orm\EntityManager;
-use Symfony\Component\DependencyInjection\ContainerAwareInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\DependencyInjection\ContainerAware;
 use SymfonyContrib\Bundle\CronBundle\Entity\Cron;
 use SymfonyContrib\Bundle\CronBundle\Entity\Repository\CronRepository;
+use Symfony\Component\Console\Output\OutputInterface;
 
-class CronExecuter implements ContainerAwareInterface
+/**
+ * Executes application cron tasks according to configuration.
+ */
+class CronExecuter extends ContainerAware
 {
-    /**
-     * @var ContainerInterface
-     */
-    public $container;
+    /** @var EntityManager */
+    protected $em;
+
+    /** @var CronRepository */
+    protected $repo;
+
+    /** @var OutputInterface */
+    protected $commandOutput;
 
     /**
-     * @var EntityManager
+     * Get the Doctrine entity manager.
+     *
+     * @return EntityManager
      */
-    public $em;
-
-    /**
-     * @var CronRepository
-     */
-    public $repo;
-
-    public function __construct()
-    {}
-
-    public function helloWorld()
-    {
-        $path = '/var/www/sites/sexology/app/logs/hello_world.txt';
-        file_put_contents($path, 'hello world');
-    }
-
-    public function setContainer(ContainerInterface $container = null)
-    {
-        $this->container = $container;
-    }
-
-    public function getEm()
+    public function getEntityManager()
     {
         return $this->em = $this->em ?: $this->container->get('doctrine.orm.entity_manager');
     }
 
     /**
+     * Get the Cron entity repository.
+     *
      * @return CronRepository
      */
     public function getRepo()
     {
-        return $this->repo = $this->repo ?: $this->getEm()->getRepository('CronBundle:Cron');
+        return $this->repo = $this->repo ?: $this->getEntityManager()->getRepository('CronBundle:Cron');
     }
 
+    /**
+     * Execute scheduled cron entries that are due.
+     */
     public function runDue()
     {
         $due = $this->getRepo()->findDue();
@@ -64,46 +54,102 @@ class CronExecuter implements ContainerAwareInterface
         }
     }
 
-    public function runAll()
+    /**
+     * Execute all known cron entries.
+     *
+     * @param bool $includeDisabled
+     */
+    public function runAll($includeDisabled = false)
     {
-        $all = $this->getRepo()->findAll();
+        $repo = $this->getRepo();
+        $all  = $includeDisabled ? $repo->findAll() : $repo->findAllEnabled();
 
         foreach ($all as $cron) {
             $this->runCron($cron);
         }
     }
 
+    /**
+     * Execute a cron by name.
+     *
+     * @param $name
+     */
     public function runByName($name)
     {
         $cron = $this->getRepo()->findOneBy(['name' => $name]);
-
         $this->runCron($cron);
     }
 
+    /**
+     * Execute a cron task.
+     *
+     * @param Cron $cron
+     *
+     * @throws \Exception
+     */
     public function runCron(Cron $cron)
     {
-        $em = $this->em;
+        $em = $this->getEntityManager();
+
+        $this->outputLine('<comment>' . $cron->getName() . ' is  running</comment>');
 
         $cron->setStatus('running');
         $em->flush($cron);
 
-        list($service, $method) = explode(':', $cron->getJob());
+        $timeStart = microtime(true);
+        try {
+            $job     = $cron->getJob();
+            $service = substr($job, 0, strpos($job, ':'));
+            $method  = substr($job, strpos($job, ':') + 1);
 
-        $service = $this->container->get($service);
+            $service = $this->container->get($service);
 
-        if ($service && $method) {
-            $timeStart = microtime(true);
-            $return    = $service->{$method}();
-            usleep(1000);
-            $timeEnd   = microtime(true);
-        } else {
-            throw new \Exception('Missing service or method.');
+            if ($service && $method) {
+                $return = $service->{$method}($cron);
+            } else {
+                throw new \Exception('Missing service or method.');
+            }
+
+            $cron->setStatus('completed');
+        } catch (\Exception $e) {
+            $cron->setStatus('failed');
+            print $e->getMessage();
         }
 
-        $cron->setStatus('completed');
+        $timeEnd = microtime(true);
         $cron->setDurationLast(round(($timeEnd - $timeStart) * 1000));
         $em->flush($cron);
+
+        $color = $cron->getStatus() === 'completed' ? 'info' : 'error';
+        $this->outputLine("<$color>" . $cron->getName() . ' has ' . $cron->getStatus() . "</$color>");
     }
 
+    /**
+     * @param OutputInterface $commandOutput
+     *
+     * @return CronExecuter
+     */
+    public function setCommandOutput($commandOutput)
+    {
+        $this->commandOutput = $commandOutput;
 
+        return $this;
+    }
+
+    /**
+     * @return OutputInterface
+     */
+    public function getCommandOutput()
+    {
+        return $this->commandOutput;
+    }
+
+    public function outputLine($line)
+    {
+        if (!$this->commandOutput) {
+            return;
+        }
+
+        $this->commandOutput->writeln($line);
+    }
 }

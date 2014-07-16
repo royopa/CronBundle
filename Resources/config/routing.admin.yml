@@ -1,0 +1,24 @@
+cron_admin_list:
+    path:  /cron
+    defaults:
+        _controller: CronBundle:Admin:list
+
+cron_admin_add:
+    path:  /cron/add
+    defaults:
+        _controller: CronBundle:Admin:form
+
+cron_admin_edit:
+    path:  /cron/{id}/edit
+    defaults:
+        _controller: CronBundle:Admin:form
+
+cron_admin_delete:
+    path:  /cron/{id}/delete
+    defaults:
+        _controller: CronBundle:Admin:delete
+
+cron_admin_run:
+    path: /cron/{id}/run
+    defaults:
+        _controller: CronBundle:Admin:run

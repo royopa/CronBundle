@@ -1,0 +1,21 @@
+{% extends "CronBundle::layout.html.twig" %}
+
+{% block page_title %}{{ cron.id ? 'Update' : 'Create' }} cron{% endblock %}
+
+{% block content %}
+    {{ form_start(form) }}
+    {{ form_errors(form) }}
+    <div class="row">
+        <div class="col-md-3">
+            {{ form_row(form.group) }}
+            {{ form_row(form.name) }}
+            {{ form_row(form.desc) }}
+            {{ form_row(form.runInterval) }}
+            {{ form_row(form.weight) }}
+            {{ form_row(form.enabled) }}
+        </div>
+    </div>
+    {{ form_widget(form.save) }}
+    {{ form_widget(form.cancel) }}
+    {{ form_end(form) }}
+{% endblock %}

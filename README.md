@@ -22,7 +22,8 @@ new SymfonyContrib\Bundle\CronBundle\CronBundle(),
 
 ## Usage Examples
 
-** Administration of database entry is not yet complete so entries need to be added manually. **
+**Administration of database entry is not yet complete so entries need to be
+added manually.**
 
 See entity for info on db entry needed.
 

@@ -2,6 +2,7 @@
 namespace SymfonyContrib\Bundle\CronBundle\Entity;
 
 use Doctrine\ORM\Event\PreUpdateEventArgs;
+use Doctrine\ORM\Event\LifecycleEventArgs;
 use Cron\CronExpression;
 
 /**
@@ -101,10 +102,15 @@ class Cron
         $this->durationAvg  = 0;
         $this->durationLast = 0;
         $this->runCount     = 0;
-        $this->owner        = 'SymfonyContrib\\Bundle\\CronBundle';
+        $this->owner        = 'SymfonyContrib:CronBundle';
     }
 
-    public function prePersist()
+    /**
+     * Doctrine lifecycle callback.
+     *
+     * @param LifecycleEventArgs $args
+     */
+    public function prePersist(LifecycleEventArgs $args)
     {
         $this->setNextRun($this->calcNextRun());
     }
@@ -114,17 +120,15 @@ class Cron
      *
      * @param PreUpdateEventArgs $args
      */
-    public function preUpdate(PreUpdateEventArgs $args = null)
+    public function preUpdate(PreUpdateEventArgs $args)
     {
         // Update data when on run.
         if ($args->hasChangedField('status') && $this->getStatus() === 'running') {
             $this->setLastRan(new \DateTime());
             $this->setNextRun($this->calcNextRun());
             $this->setRunCount($this->runCount + 1);
-        }
-
-        // Set next run when interval or last run has changed.
-        if ($args->hasChangedField('lastRan') || $args->hasChangedField('runInterval')) {
+        } else if ($args->hasChangedField('lastRan') || $args->hasChangedField('runInterval')) {
+            // Set next run when interval or last run has changed.
             $this->setNextRun($this->calcNextRun());
         }
 
@@ -381,7 +385,7 @@ class Cron
      */
     public function setGroup($group)
     {
-        $this->group = $group;
+        $this->group = $group ?: 'Default';
     }
 
     /**

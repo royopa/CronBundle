@@ -1,8 +1,21 @@
 parameters:
     cron.executer.class: SymfonyContrib\Bundle\CronBundle\CronExecuter
+    cron.form.cron.class: SymfonyContrib\Bundle\CronBundle\Form\CronForm
+    cron.twig.extension.class: SymfonyContrib\Bundle\CronBundle\Twig\CronExtension
 
 services:
     cron.executer:
         class: %cron.executer.class%
         calls:
             - [setContainer, [@service_container]]
+
+    cron.form.cron:
+        class: %cron.form.cron.class%
+        tags:
+            - name: form.type
+              alias: cron_form
+
+    cron.twig.extension:
+        class: %cron.twig.extension.class%
+        tags:
+            - name: twig.extension

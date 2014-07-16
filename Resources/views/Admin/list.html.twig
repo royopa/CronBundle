@@ -1,0 +1,73 @@
+{% extends "CronBundle::layout.html.twig" %}
+
+{% block page_title %}Crons{% endblock %}
+
+{% block content %}
+    <a href="{{ path('cron_admin_add') }}" class="btn btn-primary btn-sm">
+        <span class="glyphicon glyphicon-plus"></span>
+        <strong>Add Cron</strong>
+    </a>
+    {% for group, list in crons %}
+        <h2>{{ group }}</h2>
+        <table class="table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>Enabled</th>
+                    <th>Name</th>
+                    <th>Job</th>
+                    <th>Run Interval</th>
+                    <th>Status</th>
+                    <th>Last</th>
+                    <th>Max</th>
+                    <th>Avg</th>
+                    <th>Count</th>
+                    <th>Last Ran</th>
+                    <th>Next Run In</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cron in list %}
+                    <tr>
+                        <td>
+                            <span class="{{ cron.enabled ? 'glyphicon glyphicon-ok' : '' }}">
+                                <span class="text-hide">{{ cron.enabled ? 'Y' : 'N' }}</span>
+                            </span>
+                        </td>
+                        <td>{{ cron.name }}</td>
+                        <td>{{ cron.job }}</td>
+                        <td>{{ cron.runInterval }}</td>
+                        <td>{{ cron.status }}</td>
+                        <td>{{ cron.durationLast }}</td>
+                        <td>{{ cron.durationMax }}</td>
+                        <td>{{ cron.durationAvg }}</td>
+                        <td>{{ cron.runCount }}</td>
+                        <td>{{ cron.lastRan|date('Y-m-d H:i:s') }}</td>
+                        <td>{{ cron.nextRun|cron_date_diff }}</td>
+                        <td>
+                            <div class="btn-group">
+                                <a title="Run" href="{{ path('cron_admin_run', {"id": cron.id}) }}" class="btn btn-default btn-sm">
+                                    <span class="glyphicon glyphicon-play"></span>
+                                </a>
+                                <a title="Edit" href="{{ path('cron_admin_edit', {"id": cron.id}) }}" class="btn btn-primary btn-sm">
+                                    <span class="glyphicon glyphicon-pencil"></span>
+                                </a>
+                                <a title="Delete" href="{{ path('cron_admin_delete', {"id": cron.id}) }}" class="btn btn-danger btn-sm">
+                                    <span class="glyphicon glyphicon-trash"></span>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td colspan="15">{{ cron.desc }}</td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="15">No crons found.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endfor %}
+{% endblock %}
