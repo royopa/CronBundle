@@ -29,10 +29,11 @@ class CronForm extends AbstractType
         $builder
             ->add('group', 'text')
             ->add('name', 'text')
-            ->add('runInterval', 'text')
             ->add('desc', 'text', [
                 'required' => false,
             ])
+            ->add('job', 'text')
+            ->add('runInterval', 'text')
             ->add('weight', 'integer')
             ->add('enabled', 'checkbox', [
                 'required' => false,
